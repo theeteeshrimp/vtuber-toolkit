@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - VTuber Toolkit</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; }
+        .logo span { color: #e94560; }
+        .main {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(233,69,96,0.2);
+        }
+        .panel h2 {
+            color: #e94560;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(233,69,96,0.3);
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 1rem;
+        }
+        .btn {
+            background: #e94560;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .btn:hover { background: #c73e54; }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .overlay-url {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            margin-top: 1rem;
+            word-break: break-all;
+        }
+        .status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        .status.online { background: #4ade80; }
+        .status.offline { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo"><span>VTuber</span>Toolkit</div>
+        <nav>
+            <a href="/" style="color: #fff; text-decoration: none;">← Back</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <!-- OBS Config -->
+        <div class="panel">
+            <h2>🎬 OBS Configuration</h2>
+            <div class="input-group">
+                <label>OBS WebSocket Host</label>
+                <input type="text" id="obs-host" value="localhost" placeholder="localhost">
+            </div>
+            <div class="input-group">
+                <label>OBS WebSocket Port</label>
+                <input type="number" id="obs-port" value="4455" placeholder="4455">
+            </div>
+            <div class="input-group">
+                <label>Password (optional)</label>
+                <input type="password" id="obs-password" placeholder="">
+            </div>
+            <button class="btn" onclick="connectOBS()">Connect</button>
+            <span id="obs-status"><span class="status offline"></span>Disconnected</span>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="panel">
+            <h2>🧪 Test Controls</h2>
+            
+            <h3 style="margin: 1rem 0 0.5rem; color: #aaa; font-size: 1rem;">Test Chat Message</h3>
+            <div class="input-group">
+                <input type="text" id="test-username" placeholder="Username" value="TestUser">
+            </div>
+            <div class="input-group">
+                <input type="text" id="test-message" placeholder="Message" value="Hello stream!">
+            </div>
+            <button class="btn" onclick="sendTestChat()">Send Test Chat</button>
+
+            <h3 style="margin: 1.5rem 0 0.5rem; color: #aaa; font-size: 1rem;">Test Alert</h3>
+            <select id="alert-type" style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border-radius: 8px;">
+                <option value="follow">New Follower</option>
+                <option value="sub">New Subscriber</option>
+                <option value="donation">Donation</option>
+                <option value="raid">Raid</option>
+            </select>
+            <button class="btn" onclick="sendTestAlert()">Trigger Test Alert</button>
+        </div>
+
+        <!-- Overlay URLs -->
+        <div class="panel">
+            <h2>🔗 OBS Overlay URLs</h2>
+            <p style="color: #aaa; margin-bottom: 1rem;">Add these as Browser Sources in OBS:</p>
+            
+            <h4 style="color: #e94560; margin: 1rem 0 0.5rem;">Chat Overlay</h4>
+            <div class="overlay-url" id="chat-url">http://localhost:5000/overlay</div>
+            
+            <h4 style="color: #e94560; margin: 1rem 0 0.5rem;">Alert Overlay</h4>
+            <div class="overlay-url" id="alert-url">http://localhost:5000/alerts</div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel">
+            <h2>⚡ Quick Actions</h2>
+            <button class="btn" onclick="clearChat()">Clear Chat</button>
+            <button class="btn btn-secondary" onclick="exportConfig()">Export Config</button>
+        </div>
+    </main>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        
+        // Update URLs with current host
+        const host = window.location.host;
+        document.getElementById('chat-url').textContent = `http://${host}/overlay`;
+        document.getElementById('alert-url').textContent = `http://${host}/alerts`;
+        
+        function connectOBS() {
+            const host = document.getElementById('obs-host').value;
+            const port = document.getElementById('obs-port').value;
+            const password = document.getElementById('obs-password').value;
+            
+            fetch('/api/obs/config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({host, port, password})
+            }).then(() => {
+                document.getElementById('obs-status').innerHTML = 
+                    '<span class="status online"></span>Configured';
+            });
+        }
+        
+        function sendTestChat() {
+            const username = document.getElementById('test-username').value;
+            const message = document.getElementById('test-message').value;
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    platform: 'TEST',
+                    username: username,
+                    message: message,
+                    color: '#e94560',
+                    badges: ['👑']
+                })
+            });
+        }
+        
+        function sendTestAlert() {
+            const type = document.getElementById('alert-type').value;
+            const alerts = {
+                follow: {title: 'New Follower!', message: 'Someone followed the stream!'},
+                sub: {title: 'New Subscriber!', message: 'Welcome to the family!'},
+                donation: {title: 'Donation!', message: 'Thanks for the support!'},
+                raid: {title: 'Raid!', message: 'Incoming raiders!'}
+            };
+            
+            fetch('/api/alerts', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    type: type,
+                    ...alerts[type]
+                })
+            });
+        }
+        
+        function clearChat() {
+            if (confirm('Clear all chat messages?')) {
+                fetch('/api/chat/clear', {method: 'POST'});
+            }
+        }
+        
+        function exportConfig() {
+            alert('Config export coming soon!');
+        }
+    </script>
+</body>
+</html>

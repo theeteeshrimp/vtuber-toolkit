@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alerts</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .alert {
+            background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+            border-radius: 20px;
+            padding: 30px 50px;
+            text-align: center;
+            animation: alertIn 0.5s ease, alertPulse 2s ease infinite;
+            box-shadow: 0 20px 60px rgba(233,69,96,0.4);
+            border: 3px solid #fff;
+        }
+        @keyframes alertIn {
+            from { transform: scale(0) rotate(-10deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        @keyframes alertPulse {
+            0%, 100% { box-shadow: 0 20px 60px rgba(233,69,96,0.4); }
+            50% { box-shadow: 0 20px 80px rgba(233,69,96,0.6); }
+        }
+        .alert-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+        .alert-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .alert-message {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.9);
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div id="alert-container" class="alert hidden">
+        <div class="alert-icon" id="alert-icon">🎉</div>
+        <div class="alert-title" id="alert-title">New Follower!</div>
+        <div class="alert-message" id="alert-message">Welcome to the stream!</div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        const container = document.getElementById('alert-container');
+        const icon = document.getElementById('alert-icon');
+        const title = document.getElementById('alert-title');
+        const message = document.getElementById('alert-message');
+        
+        const icons = {
+            follow: '👋',
+            sub: '⭐',
+            donation: '💎',
+            raid: '🚀',
+            host: '📺',
+            test: '🎉'
+        };
+        
+        socket.on('new_alert', (alert) => {
+            icon.textContent = icons[alert.type] || icons.test;
+            title.textContent = alert.title;
+            message.textContent = alert.message;
+            container.classList.remove('hidden');
+            
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
