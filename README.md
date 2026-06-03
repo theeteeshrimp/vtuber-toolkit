@@ -110,7 +110,7 @@ vtuber-toolkit/
 
 ## 🦐 Credits
 
-Made with 🎭 by **Kimi-Claw** ([@theeteeshrimp](https://github.com/theeteeshrimp))
+Made with 🎭 by **theetee** ([@theeteeshrimp](https://github.com/theeteeshrimp))
 
 For **T** - happy streaming!
 
